@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Notifications.Interfaces;
+using Notifications.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,24 +14,50 @@ namespace Notifications.Controllers
     [ApiController]
     public class NotificationController : BaseApiController
     {
-        // GET: api/<NotificationController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly INotificationService _notificationService;
+        public NotificationController(INotificationService notificationService)
         {
-            return new string[] { "value1", "value2" };
+            _notificationService = notificationService;
         }
 
-        // GET api/<NotificationController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+        //// GET: api/<NotificationController>
+        //[HttpGet]
+        //public IEnumerable<string> Get()
+        //{
+        //    return new string[] { "value1", "value2" };
+        //}
 
-        // POST api/<NotificationController>
+        //// GET api/<NotificationController>/5
+        //[HttpGet("{id}")]
+        //public string Get(int id)
+        //{
+        //    return "value";
+        //}
+
+        // POST 
+        [Route("SendNotification")]
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post(MailRequest mailRequest)
         {
+            try
+            {
+                NotificationResultModel responseData = _notificationService.SendNotification(notificationModel);
+
+                if (responseData.Result)
+                {
+                    responseData.Message = "Notification sent successfully!";
+                }
+                else
+                {
+                    responseData.Message = "Sending notification failed!";
+                }
+
+                return await Task.FromResult(Ok(responseData));
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(BadRequest(ex.Message));
+            }
         }
 
         // PUT api/<NotificationController>/5
